@@ -1,5 +1,8 @@
-// import {
-//   "username/mb-code-agent" @lib,
-// }
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/http",
+}
 
-pkgtype(kind: "executable")
+options(
+  "is-main": true,
+)
