@@ -1,3 +1,18 @@
+async fn explain_code(config : Config, code : String) -> Unit {
+  print_section("代码解释与优化建议")
+  print_info("🤖 正在生成代码分析...")
+
+  let messages : Array[Json] = [
+    { "role": "system", "content": "你是MoonBit代码评审专家。请用中文解释以下代码的核心逻辑，然后给出2-3条具体的优化建议（性能、可读性、规范等方面）。格式：先写【逻辑解释】，再写【优化建议】，每条建议一行。语言简洁专业。" },
+    { "role": "user", "content": code },
+  ]
+
+  let message = chat(config, messages, [])
+  if message is { "content": String(content), .. } {
+    color_print(cyan, content)
+  }
+}
+
 pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
   print_header("mb-code-agent")
   print_info("用户需求：\{user_request}")
@@ -19,6 +34,7 @@ pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
   let max_turns = 10
   let mut turn = 0
   let mut final_reply = ""
+  let mut final_code = ""
 
   while turn < max_turns {
     turn = turn + 1
@@ -29,7 +45,6 @@ pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
     print_info("✅ 大模型回复完成")
     messages = messages + [message]
 
-    // 打印模型的文本回复（如果有）
     if message is { "content": String(content), .. } {
       if content.length() > 0 {
         print_section("模型回复")
@@ -38,7 +53,6 @@ pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
       }
     }
 
-    // 检查是否有工具调用
     let tool_calls : Array[ToolCall] = if message is { "tool_calls": tool_calls_json, .. } {
       @json.from_json(tool_calls_json)
     } else {
@@ -46,9 +60,9 @@ pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
     }
 
     if tool_calls.is_empty() {
-      // 没有工具调用，尝试提取代码并执行
       let code = extract_code(final_reply)
       if code.length() > 0 && code != final_reply {
+        final_code = code
         print_section("生成的代码")
         print_code(code)
         print_section("沙箱执行中...")
@@ -57,6 +71,7 @@ pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
           print_success("执行成功！exit code = \{exit_code}")
           print_section("运行结果")
           color_print(green, output)
+          explain_code(config, code)
         } else {
           print_error("执行失败！exit code = \{exit_code}")
           print_section("报错信息")
@@ -68,7 +83,6 @@ pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
       break
     }
 
-    // 执行工具调用
     print_section("工具调用（\{tool_calls.length()} 个）")
     for tool_call in tool_calls {
       print_info("🔧 调用工具：\{tool_call.function.name}")

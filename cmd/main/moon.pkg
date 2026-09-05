@@ -2,6 +2,7 @@ import {
   "username/mb-code-agent" @agent,
   "moonbitlang/core/env",
   "moonbitlang/async",
+  "moonbitlang/async/process",
 }
 
 options(
