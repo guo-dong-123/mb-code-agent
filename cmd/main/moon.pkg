@@ -1,9 +1,7 @@
 import {
+  "username/mb-code-agent" @agent,
+  "moonbitlang/core/env",
   "moonbitlang/async",
-  "moonbitlang/async/http",
-  "moonbitlang/async/process",
-  "moonbitlang/async/fs",
-  "moonbitlang/core/json",
 }
 
 options(
