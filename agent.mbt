@@ -109,3 +109,57 @@ pub async fn run_agent(config : Config, user_request : String) -> Unit raise {
     print_error("已达到最大对话轮次 \{max_turns}")
   }
 }
+
+pub async fn run_agent_demo() -> Unit raise {
+  print_header("mb-code-agent")
+  print_info("用户需求：写一个计算斐波那契数列第10项的程序")
+  print_info("🎯 演示模式：使用预设模拟回复，沙箱执行为真实")
+
+  // 轮次1：模拟工具调用
+  print_section("对话轮次 1")
+  print_section("模型回复")
+  println("我先查看当前目录结构，确认环境后再编写代码。")
+
+  print_section("工具调用（1 个）")
+  print_info("🔧 调用工具：execute_command")
+  print_info("   参数：{\"command\": \"ls -la\"}")
+
+  print_section("工具返回结果")
+  let (_, ls_output) = @process.collect_output_merged("sh", ["-c", "ls -la | head -20"])
+  color_print(cyan, ls_output.text())
+
+  // 轮次2：模拟代码生成
+  print_section("对话轮次 2")
+  print_section("模型回复")
+  let demo_code = "fn fib(n: Int) -> Int {\n  if n <= 1 {\n    n\n  } else {\n    fib(n - 1) + fib(n - 2)\n  }\n}\n\nfn main {\n  let result = fib(10)\n  println(\"fib(10) = \\{result}\")\n}"
+  println("已确认环境为 MoonBit 项目，以下是生成的代码：\n")
+  println("```moonbit")
+  println(demo_code)
+  println("```")
+
+  // 真实沙箱执行
+  print_section("生成的代码")
+  print_code(demo_code)
+  print_section("沙箱执行中...")
+  let (exit_code, output) = execute_code(demo_code)
+
+  if exit_code == 0 {
+    print_success("执行成功！exit code = \{exit_code}")
+    print_section("运行结果")
+    color_print(green, output)
+
+    // 预设代码分析
+    print_section("代码解释与优化建议")
+    color_print(cyan, "【逻辑解释】")
+    color_print(cyan, "该代码使用递归实现斐波那契数列计算。fib 函数在 n <= 1 时返回 n，否则返回 fib(n-1) + fib(n-2)。main 函数计算 fib(10) 并打印结果。")
+    color_print(cyan, "")
+    color_print(cyan, "【优化建议】")
+    color_print(cyan, "1. 当前递归实现存在大量重复计算，时间复杂度 O(2^n)，建议改用迭代或记忆化搜索将复杂度降至 O(n)。")
+    color_print(cyan, "2. 可增加输入校验，处理负数输入的边界情况。")
+    color_print(cyan, "3. 斐波那契数列增长较快，较大 n 值可能导致 Int 溢出，建议根据需求考虑溢出检查。")
+  } else {
+    print_error("执行失败！exit code = \{exit_code}")
+    print_section("报错信息")
+    color_print(red, output)
+  }
+}

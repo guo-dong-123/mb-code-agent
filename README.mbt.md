@@ -73,6 +73,14 @@ export MB_AGENT_MODEL="deepseek-chat"
 
 ## 🚀 使用方法
 
+### 演示模式（无需 API Key）
+
+```bash
+moon run cmd/main --demo
+```
+
+使用预设模拟回复，完整展示工具调用→代码生成→沙箱执行→代码分析全流程，沙箱执行为真实执行。
+
 ### 单次执行模式
 
 ```bash

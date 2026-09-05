@@ -49,6 +49,13 @@ async fn repl(config : @agent.Config) -> Unit raise {
 
 async fn main raise {
   let args = @env.args()
+
+  // 演示模式：无需 API Key
+  if args.length() >= 2 && args[1] == "--demo" {
+    @agent.run_agent_demo()
+    return
+  }
+
   let config = @agent.Config::from_env()
 
   if args.length() < 2 {
